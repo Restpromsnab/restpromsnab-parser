@@ -1,5 +1,4 @@
 import { config } from "./config.ts";
-import { prisma } from "./db/index.ts";
 import { app } from "./server.ts";
 
 const signals = ["SIGINT", "SIGTERM"];
@@ -19,9 +18,6 @@ process.on("uncaughtException", (error) => {
 process.on("unhandledRejection", (error) => {
 	console.error(error);
 });
-
-await prisma.$connect();
-console.log("🗄️ Database was connected!");
 
 app.listen(config.PORT, () =>
 	console.log(`🦊 Server started at ${app.server?.url.origin}`),
