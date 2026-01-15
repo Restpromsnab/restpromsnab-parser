@@ -1,4 +1,4 @@
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import { ParseModel } from "./model";
 import { ParseService } from "./service";
 

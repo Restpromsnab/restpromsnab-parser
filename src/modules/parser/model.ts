@@ -14,6 +14,7 @@ export namespace ParseModel {
 		description: t.String(),
 		subtitle: t.String(),
 		characteristics: t.Array(characteristics),
+		images: t.Array(t.String()),
 	});
 	export type parseResponse = typeof parseResponse.static;
 

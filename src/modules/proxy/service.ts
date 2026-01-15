@@ -1,5 +1,3 @@
-import type { ProxyModel } from "./model";
-
 export abstract class ProxyService {
 	private static readonly USER_AGENT =
 		"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
@@ -78,21 +76,14 @@ export abstract class ProxyService {
 				statusText: response.statusText,
 				headers,
 			});
-		} catch (err: any) {
-			console.error("[ProxyService]", err);
-
-			const isTimeout =
-				err.name === "AbortError" || err.message?.includes("timeout");
-
+		} catch {
 			return new Response(
 				JSON.stringify({
-					error: isTimeout
-						? "Превышено время ожидания"
-						: "Ошибка проксирования",
-					message: err.message || "Неизвестная ошибка",
+					error: "Ошибка проксирования",
+					message: "Неизвестная ошибка",
 				}),
 				{
-					status: isTimeout ? 504 : 502,
+					status: 502,
 					headers: { "Content-Type": "application/json" },
 				},
 			);

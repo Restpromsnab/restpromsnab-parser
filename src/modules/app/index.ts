@@ -1,4 +1,4 @@
-import { Elysia, t } from "elysia";
+import { Elysia } from "elysia";
 import { AppModel } from "./model";
 import { AppService } from "./service";
 

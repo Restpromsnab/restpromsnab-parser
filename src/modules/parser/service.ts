@@ -16,6 +16,7 @@ export abstract class ParseService {
 			sku: "",
 			subtitle: "",
 			characteristics: [],
+			images: [],
 		};
 
 		try {
