@@ -2,7 +2,7 @@ import puppeteer, { type Browser, type Page } from "puppeteer";
 import { selectors } from "./constants/selectors";
 import type { ParseModel } from "./model";
 
-export abstract class AppService {
+export abstract class ParseService {
 	static async parse(
 		url: string,
 		paragraphLength: number,
@@ -19,7 +19,7 @@ export abstract class AppService {
 		};
 
 		try {
-			const browserAndPage = await AppService.initBrowser();
+			const browserAndPage = await ParseService.initBrowser();
 			browser = browserAndPage.browser;
 			page = browserAndPage.page;
 
@@ -93,7 +93,7 @@ export abstract class AppService {
 		} catch (error) {
 			console.error("Ошибка парсинга с Puppeteer:", error);
 		} finally {
-			await AppService.cleanupBrowser(browser, page);
+			await ParseService.cleanupBrowser(browser, page);
 		}
 		return result;
 	}

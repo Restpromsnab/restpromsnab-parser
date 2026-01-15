@@ -1,11 +1,11 @@
 import { Elysia, t } from "elysia";
 import { ParseModel } from "./model";
-import { AppService } from "./service";
+import { ParseService } from "./service";
 
 export const parseController = new Elysia({ prefix: "/parse" }).post(
 	"/entero",
 	async ({ body }) => {
-		return await AppService.parse(body.url, body.paragraphLength);
+		return await ParseService.parse(body.url, body.paragraphLength);
 	},
 	{
 		response: {
