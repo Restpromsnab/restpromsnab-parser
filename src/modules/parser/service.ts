@@ -91,6 +91,40 @@ export abstract class ParseService {
 			});
 			result.characteristics = parsedCharacteristics;
 			result.sku = parsedSku;
+
+			result.images = await page.evaluate(() => {
+				const images: string[] = [];
+
+				// 1. Пытаемся взять все качественные изображения из галереи thumbs
+				const thumbLinks = document.querySelectorAll(
+					".product-card-gallery-thumbs-i a",
+				);
+
+				if (thumbLinks.length > 0) {
+					thumbLinks.forEach((link) => {
+						const href = link.getAttribute("href");
+						if (href && href.includes("cdn.entero.ru")) {
+							// берём полную версию (mp@2x)
+							images.push("https:" + href);
+						}
+					});
+				}
+
+				// 2. Если список thumbs не найден или пустой — берём главное изображение
+				if (images.length === 0) {
+					const mainImg = document.querySelector(
+						".product-card-gallery-image-container img.image",
+					);
+					if (mainImg) {
+						const src = mainImg.getAttribute("src");
+						if (src) {
+							images.push("https:" + src);
+						}
+					}
+				}
+
+				return images;
+			});
 		} catch (error) {
 			console.error("Ошибка парсинга с Puppeteer:", error);
 		} finally {
@@ -117,7 +151,7 @@ export abstract class ParseService {
 				"--no-sandbox",
 				"--disable-setuid-sandbox",
 				"--disable-dev-shm-usage",
-				"--single-process", //
+				// "--single-process", //
 				"--disable-accelerated-2d-canvas",
 				"--no-first-run",
 				"--no-zygote",
