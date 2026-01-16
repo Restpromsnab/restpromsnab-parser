@@ -56,7 +56,7 @@ export abstract class ParseService {
 				paragraphLength,
 			);
 			result.description = description;
-			result.subtitle = description.substring(0, description.indexOf("."));
+			result.subtitle = `${description.substring(0, description.indexOf("."))}.`;
 			const { parsedCharacteristics, parsedSku } = await page.evaluate(() => {
 				const tables = document.querySelectorAll("table.ch");
 				const allChars: ParseModel.characteristics[] = [];
