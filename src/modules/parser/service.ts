@@ -16,6 +16,7 @@ export abstract class ParseService {
 			sku: "",
 			subtitle: "",
 			characteristics: [],
+			features: [],
 			images: [],
 		};
 
@@ -34,9 +35,13 @@ export abstract class ParseService {
 				selectors.entero.title,
 				(el) => el.textContent,
 			);
-			result.price = await page.$eval(selectors.entero.price, (el) =>
-				el.textContent.replace(/[^0-9]/g, ""),
-			);
+			try {
+				result.price = await page.$eval(selectors.entero.price, (el) =>
+					el.textContent.replace(/[^0-9]/g, ""),
+				);
+			} catch {
+				result.price = "0";
+			}
 			const description = await page.evaluate(
 				(sel, maxParagraphs) => {
 					const container = document.querySelector(sel);
@@ -125,6 +130,60 @@ export abstract class ParseService {
 
 				return images;
 			});
+
+			result.features = await page.evaluate(() => {
+				const features: { name: string; value: string }[] = [];
+
+				// Ищем все <p> с <b> внутри — это самый частый паттерн на entero.ru
+				const boldParagraphs = Array.from(
+					document.querySelectorAll("p > b, p > strong"),
+				);
+
+				boldParagraphs.forEach((b) => {
+					const name = b.textContent?.trim() ?? "";
+					if (!name) return;
+
+					// Нормализуем название для проверки
+					const normalizedName = name
+						.toLowerCase()
+						.replace(/:$/, "")
+						.replace(/\s+/g, " ")
+						.trim();
+
+					// Проверяем, что это нужный нам заголовок
+					const isFeatureBlock =
+						normalizedName.includes("особенности") ||
+						normalizedName.includes("дополнительные характеристики") ||
+						normalizedName.includes("комплектация") ||
+						normalizedName.includes("преимущества") ||
+						normalizedName.includes("что в комплекте");
+
+					if (!isFeatureBlock) return;
+
+					// Ищем следующий <ul> — он обычно идёт сразу после <p>
+					let nextSibling = b.closest("p")?.nextElementSibling;
+					while (nextSibling && nextSibling.tagName !== "UL") {
+						nextSibling = nextSibling.nextElementSibling;
+						// Защита от зацикливания
+						if (!nextSibling) break;
+					}
+
+					if (nextSibling?.tagName === "UL") {
+						const items = Array.from(nextSibling.querySelectorAll("li"))
+							.map((li) => li.textContent?.trim() ?? "")
+							.filter(Boolean);
+
+						if (items.length > 0) {
+							features.push({
+								name: name,
+								value: items.join("\n"),
+							});
+						}
+					}
+				});
+
+				return features;
+			});
 		} catch (error) {
 			console.error("Ошибка парсинга с Puppeteer:", error);
 		} finally {
@@ -133,7 +192,7 @@ export abstract class ParseService {
 		return result;
 	}
 
-	static async cleanupBrowser(
+	private static async cleanupBrowser(
 		browser: Browser | null,
 		page: Page | null,
 	): Promise<void> {
@@ -141,7 +200,7 @@ export abstract class ParseService {
 		if (browser) await browser.close();
 	}
 
-	static async initBrowser(): Promise<{
+	private static async initBrowser(): Promise<{
 		browser: Browser;
 		page: Page;
 	}> {
